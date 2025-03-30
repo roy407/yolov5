@@ -59,7 +59,7 @@ DATASETS_DIR = Path(os.getenv("YOLOv5_DATASETS_DIR", ROOT.parent / "datasets")) 
 AUTOINSTALL = str(os.getenv("YOLOv5_AUTOINSTALL", True)).lower() == "true"  # global auto-install mode
 VERBOSE = str(os.getenv("YOLOv5_VERBOSE", True)).lower() == "true"  # global verbose mode
 TQDM_BAR_FORMAT = "{l_bar}{bar:10}{r_bar}"  # tqdm bar format
-FONT = "Arial.ttf"  # https://github.com/ultralytics/assets/releases/download/v0.0.0/Arial.ttf
+FONT = ""  # https://github.com/ultralytics/assets/releases/download/v0.0.0/Arial.ttf
 
 torch.set_printoptions(linewidth=320, precision=5, profile="long")
 np.set_printoptions(linewidth=320, formatter={"float_kind": "{:11.5g}".format})  # format short g, %precision=5
@@ -394,7 +394,7 @@ def check_git_status(repo="ultralytics/yolov5", branch="master"):
         pull = "git pull" if remote == "origin" else f"git pull {remote} {branch}"
         s += f"⚠️ YOLOv5 is out of date by {n} commit{'s' * (n > 1)}. Use '{pull}' or 'git clone {url}' to update."
     else:
-        s += f"up to date with {url} ✅"
+        s += f"up to date with {url} ?"
     LOGGER.info(s)
 
 
@@ -533,7 +533,7 @@ def check_dataset(data, autodownload=True):
 
     # Checks
     for k in "train", "val", "names":
-        assert k in data, emojis(f"data.yaml '{k}:' field missing ❌")
+        assert k in data, emojis(f"data.yaml '{k}:' field missing ?")
     if isinstance(data["names"], (list, tuple)):  # old array format
         data["names"] = dict(enumerate(data["names"]))  # convert to dict
     assert all(isinstance(k, int) for k in data["names"].keys()), "data.yaml names keys must be integers, i.e. 2: car"
@@ -561,7 +561,7 @@ def check_dataset(data, autodownload=True):
         if not all(x.exists() for x in val):
             LOGGER.info("\nDataset not found ⚠️, missing paths %s" % [str(x) for x in val if not x.exists()])
             if not s or not autodownload:
-                raise Exception("Dataset not found ❌")
+                raise Exception("Dataset not found ?")
             t = time.time()
             if s.startswith("http") and s.endswith(".zip"):  # URL
                 f = Path(s).name  # filename
@@ -577,7 +577,7 @@ def check_dataset(data, autodownload=True):
             else:  # python script
                 r = exec(s, {"yaml": data})  # return None
             dt = f"({round(time.time() - t, 1)}s)"
-            s = f"success ✅ {dt}, saved to {colorstr('bold', DATASETS_DIR)}" if r in (0, None) else f"failure {dt} ❌"
+            s = f"success ? {dt}, saved to {colorstr('bold', DATASETS_DIR)}" if r in (0, None) else f"failure {dt} ?"
             LOGGER.info(f"Dataset download {s}")
     check_font("Arial.ttf" if is_ascii(data["names"]) else "Arial.Unicode.ttf", progress=True)  # download fonts
     return data  # dictionary
@@ -603,11 +603,11 @@ def check_amp(model):
     im = f if f.exists() else "https://ultralytics.com/images/bus.jpg" if check_online() else np.ones((640, 640, 3))
     try:
         assert amp_allclose(deepcopy(model), im) or amp_allclose(DetectMultiBackend("yolov5n.pt", device), im)
-        LOGGER.info(f"{prefix}checks passed ✅")
+        LOGGER.info(f"{prefix}checks passed ?")
         return True
     except Exception:
         help_url = "https://github.com/ultralytics/yolov5/issues/7908"
-        LOGGER.warning(f"{prefix}checks failed ❌, disabling Automatic Mixed Precision. See {help_url}")
+        LOGGER.warning(f"{prefix}checks failed ?, disabling Automatic Mixed Precision. See {help_url}")
         return False
 
 
@@ -671,7 +671,7 @@ def download(url, dir=".", unzip=True, delete=True, curl=False, threads=1, retry
                 elif i < retry:
                     LOGGER.warning(f"⚠️ Download failure, retrying {i + 1}/{retry} {url}...")
                 else:
-                    LOGGER.warning(f"❌ Failed to download {url}...")
+                    LOGGER.warning(f"? Failed to download {url}...")
 
         if unzip and success and (f.suffix == ".gz" or is_zipfile(f) or is_tarfile(f)):
             LOGGER.info(f"Unzipping {f}...")
@@ -707,7 +707,7 @@ def clean_str(s):
     """Cleans a string by replacing special characters with underscore, e.g., `clean_str('#example!')` returns
     '_example_'.
     """
-    return re.sub(pattern="[|@#!¡·$€%&()=?¿^*;:,¨´><+]", repl="_", string=s)
+    return re.sub(pattern="[|@#!¡·$?%&()=?¿^*;:,¨´><+]", repl="_", string=s)
 
 
 def one_cycle(y1=0.0, y2=1.0, steps=100):
